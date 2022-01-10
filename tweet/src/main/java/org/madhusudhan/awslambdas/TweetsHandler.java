@@ -13,6 +13,7 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.madhusudhan.awslambdas.exception.TweetSizeExceededException;
 import org.madhusudhan.awslambdas.model.Tweet;
 
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
@@ -20,9 +21,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -30,9 +28,9 @@ import com.google.gson.Gson;
 
 public class TweetsHandler implements RequestStreamHandler {
 	private JSONParser parser = new JSONParser();
-	private static final String DYNAMO_DB_TABLE_NAME = System.getenv("TABLE_NAME");
 	private static final String DYNAMO_DB_ENDPOINT = System.getenv("DYNAMO_DB_ENDPOINT");
 	private static final String REGION = System.getenv("REGION");
+	private static final int MAX_TWEET_TEXT_SIZE = Integer.parseInt(System.getenv("MAX_TWEET_TEXT_SIZE"));
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -41,26 +39,28 @@ public class TweetsHandler implements RequestStreamHandler {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 		JSONObject responseJson = new JSONObject();
 
-		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.defaultClient();
-		DynamoDB dynamoDb = new DynamoDB(client);
+		AmazonDynamoDB client = AmazonDynamoDBClientBuilder
+				.standard()
+				.withEndpointConfiguration(new EndpointConfiguration(DYNAMO_DB_ENDPOINT, REGION))
+				.build();
+		DynamoDBMapper mapper = new DynamoDBMapper(client);
 		try {
 			JSONObject event = (JSONObject) parser.parse(reader);
 
 			if (event.get("body") != null) {
+				
 				Gson gson = new Gson();
 				Tweet tweet = gson.fromJson((String) event.get("body"), Tweet.class);
-				Item item = new Item().withPrimaryKey("id", tweet.getId())
-						.withString("user", tweet.getUser())
-						.withBoolean("liked", tweet.isLiked())
-						.withBoolean("retweeted", tweet.isRetweeted())
-						.withString("text", tweet.getText());
-
-				dynamoDb.getTable(DYNAMO_DB_TABLE_NAME)
-						.putItem(new PutItemSpec().withItem(item));
+				if (tweet.getText().length() <= MAX_TWEET_TEXT_SIZE) {
+					mapper.save(tweet);
+				} else {
+					throw new TweetSizeExceededException("Tweet text exceeded the size limit");
+				}
+		
 			}
 
 			JSONObject responseBody = new JSONObject();
-			responseBody.put("message", "New item created");
+			responseBody.put("message", "New tweet created");
 
 			JSONObject headerJson = new JSONObject();
 			headerJson.put("x-custom-header", "my custom header value");
@@ -72,6 +72,9 @@ public class TweetsHandler implements RequestStreamHandler {
 		} catch (ParseException pex) {
 			responseJson.put("statusCode", 400);
 			responseJson.put("exception", pex);
+		} catch (TweetSizeExceededException e) {
+			responseJson.put("statusCode", 400);
+			responseJson.put("exception", e);
 		}
 
 		OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8");
@@ -89,40 +92,36 @@ public class TweetsHandler implements RequestStreamHandler {
 				.standard()
 				.withEndpointConfiguration(new EndpointConfiguration(DYNAMO_DB_ENDPOINT, REGION))
 				.build();
-		DynamoDB dynamoDb = new DynamoDB(client);
-
-		Item result = null;
+		DynamoDBMapper mapper = new DynamoDBMapper(client);
 		try {
 			JSONObject event = (JSONObject) parser.parse(reader);
 			JSONObject responseBody = new JSONObject();
-
+			Tweet result = null;
 			if (event.get("pathParameters") != null) {
 
 				JSONObject pps = (JSONObject) event.get("pathParameters");
 				if (pps.get("id") != null) {
 
-					int id = Integer.parseInt((String) pps.get("id"));
-					result = dynamoDb.getTable(DYNAMO_DB_TABLE_NAME).getItem("id", id);
+					String id  = (String)pps.get("id");
+					result = mapper.load(Tweet.class, id);
+					context.getLogger().log(String.format("Tweet with id %s retrieved successfully", id));
 				}
 
 			} else if (event.get("queryStringParameters") != null) {
 
 				JSONObject qps = (JSONObject) event.get("queryStringParameters");
 				if (qps.get("id") != null) {
-
-					int id = Integer.parseInt((String) qps.get("id"));
-					result = dynamoDb.getTable(DYNAMO_DB_TABLE_NAME).getItem("id", id);
+					String id  = (String)qps.get("id");
+					result = mapper.load(Tweet.class, id);
+					context.getLogger().log(String.format("Tweet with id %s retrieved successfully", id));
 				}
 			}
 			if (result != null) {
-				Gson gson = new Gson();
-				Tweet tweet = gson.fromJson(result.toJSON(), Tweet.class);
-
-				responseBody.put("Tweet", tweet);
+				responseBody.put("Tweet", result);
 				responseJson.put("statusCode", 200);
 			} else {
 
-				responseBody.put("message", "No item found");
+				responseBody.put("message", "No tweet found");
 				responseJson.put("statusCode", 404);
 			}
 
