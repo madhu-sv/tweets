@@ -16,7 +16,7 @@ import org.json.simple.parser.ParseException;
 import org.madhusudhan.awslambdas.exception.TweetSizeExceededException;
 import org.madhusudhan.awslambdas.model.Tweet;
 
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -28,9 +28,15 @@ import com.google.gson.Gson;
 
 public class TweetsHandler implements RequestStreamHandler {
 	private JSONParser parser = new JSONParser();
-	private static final String DYNAMO_DB_ENDPOINT = System.getenv("DYNAMO_DB_ENDPOINT");
-	private static final String REGION = System.getenv("REGION");
-	private static final int MAX_TWEET_TEXT_SIZE = Integer.parseInt(System.getenv("MAX_TWEET_TEXT_SIZE"));
+	private static final int MAX_TWEET_TEXT_SIZE = 160; // Can me it part of config by using something like - Integer.parseInt(System.getenv("MAX_TWEET_TEXT_SIZE"));
+
+	private AmazonDynamoDB client = AmazonDynamoDBClientBuilder
+				.standard()
+				.withRegion(Regions.EU_WEST_2)
+				.build();
+	private DynamoDBMapper mapper = new DynamoDBMapper(client);
+	private Gson gson = new Gson();
+
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -39,24 +45,16 @@ public class TweetsHandler implements RequestStreamHandler {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 		JSONObject responseJson = new JSONObject();
 
-		AmazonDynamoDB client = AmazonDynamoDBClientBuilder
-				.standard()
-				.withEndpointConfiguration(new EndpointConfiguration(DYNAMO_DB_ENDPOINT, REGION))
-				.build();
-		DynamoDBMapper mapper = new DynamoDBMapper(client);
 		try {
 			JSONObject event = (JSONObject) parser.parse(reader);
 
 			if (event.get("body") != null) {
-				
-				Gson gson = new Gson();
 				Tweet tweet = gson.fromJson((String) event.get("body"), Tweet.class);
 				if (tweet.getText().length() <= MAX_TWEET_TEXT_SIZE) {
 					mapper.save(tweet);
 				} else {
 					throw new TweetSizeExceededException("Tweet text exceeded the size limit");
 				}
-		
 			}
 
 			JSONObject responseBody = new JSONObject();
@@ -88,11 +86,6 @@ public class TweetsHandler implements RequestStreamHandler {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 		JSONObject responseJson = new JSONObject();
 
-		AmazonDynamoDB client = AmazonDynamoDBClientBuilder
-				.standard()
-				.withEndpointConfiguration(new EndpointConfiguration(DYNAMO_DB_ENDPOINT, REGION))
-				.build();
-		DynamoDBMapper mapper = new DynamoDBMapper(client);
 		try {
 			JSONObject event = (JSONObject) parser.parse(reader);
 			JSONObject responseBody = new JSONObject();
@@ -146,12 +139,6 @@ public class TweetsHandler implements RequestStreamHandler {
 			throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 		JSONObject responseJson = new JSONObject();
-
-		AmazonDynamoDB client = AmazonDynamoDBClientBuilder
-				.standard()
-				.withEndpointConfiguration(new EndpointConfiguration(DYNAMO_DB_ENDPOINT, REGION))
-				.build();
-		DynamoDBMapper mapper = new DynamoDBMapper(client);
 		
 		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
 		List<Tweet> tweets = null;
