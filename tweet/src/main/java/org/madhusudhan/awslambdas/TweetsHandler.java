@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.madhusudhan.awslambdas.exception.TweetSizeExceededException;
 import org.madhusudhan.awslambdas.model.Tweet;
+import org.madhusudhan.awslambdas.model.User;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
@@ -25,6 +27,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class TweetsHandler implements RequestStreamHandler {
 	private JSONParser parser = new JSONParser();
@@ -54,7 +57,7 @@ public class TweetsHandler implements RequestStreamHandler {
 					mapper.save(tweet);
 				} else {
 					throw new TweetSizeExceededException("Tweet text exceeded the size limit");
-				}
+				}	
 			}
 
 			JSONObject responseBody = new JSONObject();
@@ -149,8 +152,10 @@ public class TweetsHandler implements RequestStreamHandler {
 
 				JSONObject pps = (JSONObject) event.get("pathParameters");
 				if (pps.get("user") != null) {
-					String user = pps.get("user").toString();
-					eav.put(":val1", new AttributeValue().withS(user));
+					Type userMapType = new TypeToken<Map<String, User>>() {}.getType();
+					Map userMap = gson.fromJson((String)pps.get("user"), userMapType);
+
+					eav.put(":val1", new AttributeValue().withM(userMap));
 					DynamoDBQueryExpression<Tweet> queryExpression = new DynamoDBQueryExpression<Tweet>()
 				            .withKeyConditionExpression("User = :val1").withExpressionAttributeValues(eav);
 					tweets = mapper.query(Tweet.class, queryExpression);
@@ -160,10 +165,12 @@ public class TweetsHandler implements RequestStreamHandler {
 			} else if (event.get("queryStringParameters") != null) {
 
 				JSONObject qps = (JSONObject) event.get("queryStringParameters");
-				if (qps.get("id") != null) {
+				if (qps.get("user") != null) {
+					
+					Type userMapType = new TypeToken<Map<String, User>>() {}.getType();
+					Map userMap = gson.fromJson((String)qps.get("user"), userMapType);
 
-					String user = qps.get("user").toString();
-					eav.put(":val1", new AttributeValue().withS(user));
+					eav.put(":val1", new AttributeValue().withM(userMap));
 					DynamoDBQueryExpression<Tweet> queryExpression = new DynamoDBQueryExpression<Tweet>()
 				            .withKeyConditionExpression("User = :val1").withExpressionAttributeValues(eav);
 					tweets = mapper.query(Tweet.class, queryExpression);
