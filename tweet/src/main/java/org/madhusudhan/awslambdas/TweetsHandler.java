@@ -18,7 +18,6 @@ import org.madhusudhan.awslambdas.exception.TweetSizeExceededException;
 import org.madhusudhan.awslambdas.model.Tweet;
 import org.madhusudhan.awslambdas.model.User;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -33,10 +32,7 @@ public class TweetsHandler implements RequestStreamHandler {
 	private JSONParser parser = new JSONParser();
 	private static final int MAX_TWEET_TEXT_SIZE = 160; // Can me it part of config by using something like - Integer.parseInt(System.getenv("MAX_TWEET_TEXT_SIZE"));
 
-	private AmazonDynamoDB client = AmazonDynamoDBClientBuilder
-				.standard()
-				.withRegion(Regions.EU_WEST_2)
-				.build();
+	private AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
 	private DynamoDBMapper mapper = new DynamoDBMapper(client);
 	private Gson gson = new Gson();
 
