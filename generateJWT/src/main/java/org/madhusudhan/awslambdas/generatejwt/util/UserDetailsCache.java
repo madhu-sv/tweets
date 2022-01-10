@@ -18,28 +18,25 @@ import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerExcept
 public class UserDetailsCache {
 	private static final String SM_ENDPOINT_URL = System.getenv("SM_ENDPOINT_URL");
 	private Map<String, String> userDetailsCache;
-	
-	
-	private UserDetailsCache(){
+
+	private UserDetailsCache() {
 		this.userDetailsCache = new HashMap<>();
 	}
-    
-    private static class SingletonHelper{
-        private static final UserDetailsCache INSTANCE = new UserDetailsCache();
-    }
-    
-    public static UserDetailsCache getInstance(){
-        return SingletonHelper.INSTANCE;
-    }
-    
-	public Map<String,String> getUserMap(String secretName) {
+
+	private static class SingletonHelper {
+		private static final UserDetailsCache INSTANCE = new UserDetailsCache();
+	}
+
+	public static UserDetailsCache getInstance() {
+		return SingletonHelper.INSTANCE;
+	}
+
+	public Map<String, String> getUserMap(String secretName) {
 		Region region = Region.EU_WEST_2; // Change to desired region or make it a config property
 		SecretsManagerClient secretsClient;
 		try {
-			secretsClient = SecretsManagerClient.builder()
-			        .region(region)
-			        .endpointOverride(new URI(SM_ENDPOINT_URL))
-			        .build();
+			secretsClient = SecretsManagerClient.builder().region(region).endpointOverride(new URI(SM_ENDPOINT_URL))
+					.build();
 			return getSecretValue(secretsClient, secretName);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
@@ -48,25 +45,23 @@ public class UserDetailsCache {
 	}
 
 	private Map<String, String> getSecretValue(SecretsManagerClient secretsClient, String secretName) {
-		if(this.userDetailsCache.isEmpty() || !this.userDetailsCache.containsKey(secretName)) {
+		if (this.userDetailsCache.isEmpty() || !this.userDetailsCache.containsKey(secretName)) {
 			try {
-	            GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
-	                .secretId(secretName)
-	                .build();
+				GetSecretValueRequest valueRequest = GetSecretValueRequest.builder().secretId(secretName).build();
 
-	            GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
-	            String secret = valueResponse.secretString();
-	            Gson gson = new Gson();
-	            Type type = new TypeToken<Map<String, String>>(){}.getType();
-	            this.userDetailsCache = gson.fromJson(secret, type);
-	           
-	        } catch (SecretsManagerException e) {
-	            System.err.println(e.awsErrorDetails().errorMessage());
-	        }
+				GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
+				String secret = valueResponse.secretString();
+				Gson gson = new Gson();
+				Type type = new TypeToken<Map<String, String>>() {
+				}.getType();
+				this.userDetailsCache = gson.fromJson(secret, type);
+
+			} catch (SecretsManagerException e) {
+				System.err.println(e.awsErrorDetails().errorMessage());
+			}
 		}
-		
+
 		return userDetailsCache;
-    }
-	
+	}
 
 }
