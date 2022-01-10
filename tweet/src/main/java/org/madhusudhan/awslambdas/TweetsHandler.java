@@ -48,7 +48,9 @@ public class TweetsHandler implements RequestStreamHandler {
 			JSONObject event = (JSONObject) parser.parse(reader);
 
 			if (event.get("body") != null) {
+				context.getLogger().log(String.format("Event body: %s", event.get("body").toString()));
 				Tweet tweet = gson.fromJson((String) event.get("body"), Tweet.class);
+				context.getLogger().log(String.format("Id from input : %s", tweet.getId()));
 				if (tweet.getText().length() <= MAX_TWEET_TEXT_SIZE) {
 					mapper.save(tweet);
 				} else {
