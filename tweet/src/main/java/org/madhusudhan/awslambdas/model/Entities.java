@@ -3,7 +3,6 @@ package org.madhusudhan.awslambdas.model;
 import java.io.Serializable;
 import java.util.List;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIgnore;
 
