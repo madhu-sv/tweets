@@ -3,7 +3,6 @@ package org.madhusudhan.awslambdas.model;
 
 import java.io.Serializable;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 
 import lombok.AllArgsConstructor;
@@ -15,25 +14,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @DynamoDBDocument
 public class User implements Serializable {
-	@DynamoDBAttribute
 	private String description;
-
-	@DynamoDBAttribute
 	private Integer followersCount;
-
-	@DynamoDBAttribute
 	private String userId;
-
-	@DynamoDBAttribute
 	private String userName;
-
-	@DynamoDBAttribute
 	private boolean verified;
 
 	public String getDescription() {
 		return description;
 	}
-
 	public Integer getFollowersCount() {
 		return followersCount;
 	}
