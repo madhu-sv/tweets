@@ -22,6 +22,8 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -30,10 +32,12 @@ import com.google.gson.reflect.TypeToken;
 
 public class TweetsHandler implements RequestStreamHandler {
 	private JSONParser parser = new JSONParser();
+	private static final String DYNAMODB_TABLE_NAME = System.getenv("DYNAMODB_TABLE_NAME");
 	private static final int MAX_TWEET_TEXT_SIZE = 160; // Can me it part of config by using something like - Integer.parseInt(System.getenv("MAX_TWEET_TEXT_SIZE"));
 
 	private AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
 	private DynamoDBMapper mapper = new DynamoDBMapper(client);
+	DynamoDB dynamoDb = new DynamoDB(client);
 	private Gson gson = new Gson();
 
 
@@ -49,11 +53,12 @@ public class TweetsHandler implements RequestStreamHandler {
 
 			if (event.get("body") != null) {
 				String body  = event.get("body").toString();
+				Tweet tweet = new Tweet(body);
 				context.getLogger().log(String.format("Event body: %s", body));
-				Tweet tweet = gson.fromJson(body, Tweet.class);
 				context.getLogger().log(String.format("Id from input : %s", tweet.getId()));
 				if (tweet.getText().length() <= MAX_TWEET_TEXT_SIZE) {
-					mapper.save(tweet);
+					dynamoDb.getTable(DYNAMODB_TABLE_NAME)
+                    .putItem(Item.fromJSON(body));
 				} else {
 					throw new TweetSizeExceededException("Tweet text exceeded the size limit");
 				}	

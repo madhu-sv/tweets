@@ -1,25 +1,44 @@
 package org.madhusudhan.awslambdas.model;
 
-
-import java.io.Serializable;
-
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @DynamoDBDocument
-public class User implements Serializable {
+public class User {
 	private String description;
 	private Integer followersCount;
 	private String userId;
 	private String userName;
 	private boolean verified;
 
+	public User() {
+	}
+
+	public User(String description, Integer followersCount, String userId, String userName, boolean verified) {
+		this.description = description;
+		this.followersCount = followersCount;
+		this.userId = userId;
+		this.userName = userName;
+		this.verified = verified;
+	}
+
+	public User(String json) {
+		Gson gson = new Gson();
+		User input = gson.fromJson(json, User.class);
+		this.description = input.description;
+		this.followersCount = input.followersCount;
+		this.userId = input.userId;
+		this.userName = input.userName;
+		this.verified = input.verified;
+	}
+	
+	public String toString() {
+        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(this);
+    }
+	
 	public String getDescription() {
 		return description;
 	}

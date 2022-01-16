@@ -1,22 +1,29 @@
 package org.madhusudhan.awslambdas.model;
 
-import java.io.Serializable;
 import java.util.List;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIgnore;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.google.gson.Gson;
 
 @DynamoDBDocument
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class Entities implements Serializable {
+public class Entities {
 	private List<String> hashTags;
 	private List<String> URLs;
+
+	public Entities() {}
+
+	public Entities(String json) {
+		Gson g = new Gson();
+		Entities entities = g.fromJson(json, Entities.class);
+		this.hashTags = entities.hashTags;
+		this.URLs = entities.URLs;
+	}
+
+	public Entities(List<String> hashTags, List<String> urls) {
+		this.URLs = urls;
+		this.hashTags = hashTags;
+	}
 
 	@DynamoDBIgnore
 	public List<String> getHashTags() { return hashTags; }

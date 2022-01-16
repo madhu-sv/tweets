@@ -5,14 +5,9 @@ import java.io.Serializable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @DynamoDBTable(tableName = "tweet")
 public class Tweet implements Serializable {
 	
@@ -23,6 +18,33 @@ public class Tweet implements Serializable {
     private boolean retweeted;
     private String text;
 
+	public Tweet() {
+
+	}
+
+	public Tweet(String id, User user, Entities entities, boolean favorite, boolean retweeted, String text) {
+		this.id = id;
+		this.entities = entities;
+		this.favorite = favorite;
+		this.user = user;
+		this.text = text;
+	}
+
+	public Tweet(String json) {
+		Gson gson = new Gson();
+		Tweet input = gson.fromJson(json, Tweet.class);
+		this.id = input.id;
+		this.entities = entities;
+		this.favorite = favorite;
+		this.user = user;
+		this.text = text;
+	}
+
+	public String toString() {
+        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(this);
+    }
+ 
 	@DynamoDBHashKey(attributeName="Id")
 	public String getId() {
 		return id;
