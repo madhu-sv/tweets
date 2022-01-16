@@ -34,10 +34,10 @@ public class Tweet implements Serializable {
 		Gson gson = new Gson();
 		Tweet input = gson.fromJson(json, Tweet.class);
 		this.id = input.id;
-		this.entities = entities;
-		this.favorite = favorite;
-		this.user = user;
-		this.text = text;
+		this.entities = new Entities(gson.toJson(input.entities));
+		this.favorite = input.favorite;
+		this.user = new User(gson.toJson(input.user));
+		this.text = input.text;
 	}
 
 	public String toString() {
