@@ -1,5 +1,6 @@
 package org.madhusudhan.awslambdas.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
@@ -16,8 +17,14 @@ public class Entities {
 	public Entities(String json) {
 		Gson g = new Gson();
 		Entities entities = g.fromJson(json, Entities.class);
-		this.hashTags = entities.hashTags;
-		this.URLs = entities.URLs;
+		if(entities != null && entities.URLs != null && entities.hashTags != null) {
+			this.hashTags = entities.hashTags;
+			this.URLs = entities.URLs;
+		} 
+		else {
+			this.URLs = new ArrayList<>();
+			this.hashTags = new ArrayList<>();
+		}
 	}
 
 	public Entities(List<String> hashTags, List<String> urls) {
