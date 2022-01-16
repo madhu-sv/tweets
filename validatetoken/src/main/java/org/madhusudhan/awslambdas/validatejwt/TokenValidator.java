@@ -26,6 +26,10 @@ public class TokenValidator {
 		if (token == null || "".equals(token)) {
 			throw new IllegalArgumentException(TOKEN_CANT_BE_EMPTY_MESSAGE);
 		}
+		if(token.contains("Bearer ")) {
+			token = token.replace("Bearer ", "");
+		}
+		
 
 		byte[] secret = SECRET_KEY.getBytes();
 
