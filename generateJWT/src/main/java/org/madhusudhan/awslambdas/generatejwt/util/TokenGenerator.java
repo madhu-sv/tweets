@@ -46,7 +46,7 @@ public class TokenGenerator {
 		claimsSetBuilder.issuer(ISSUER);
 
 		Date now = new Date();
-		Date expiresAt = new Date((now.getTime() + (tokenExpiry * 1000)));
+		Date expiresAt = new Date((now.getTime() + (tokenExpiry * 5000)));
 		claimsSetBuilder.expirationTime(expiresAt);
 		JWTClaimsSet claimSet = claimsSetBuilder.build();
 
