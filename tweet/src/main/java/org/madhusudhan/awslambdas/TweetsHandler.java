@@ -97,22 +97,15 @@ public class TweetsHandler implements RequestStreamHandler {
 		JSONObject responseBody = new JSONObject();
 
 		List<Tweet> tweets = mapper.scan(Tweet.class, new DynamoDBScanExpression());
-		for(Tweet tweet : tweets) {
-			context.getLogger().log(tweet.toString());
-		}
+		
 
-		ScanRequest scanRequest = new ScanRequest()
-									.withTableName(DYNAMODB_TABLE_NAME);
-		ScanResult result = client.scan(scanRequest);
-		for (Map<String, AttributeValue> item : result.getItems()){
-			context.getLogger().log(item.toString());
-		}
-		if(result.getCount() > 1) {
-			context.getLogger().log(String.format("Got %d rows", result.getCount()));
-			responseBody.put("tweetCount", result.getCount());
-			responseBody.put("tweets", gson.toJson(result.getItems()));
+		if(!tweets.isEmpty()) {
+			context.getLogger().log(String.format("Got %d rows", tweets.size()));
+			context.getLogger().log(gson.toJson(tweets));
+			responseBody.put("tweetCount", tweets.size());
+			responseBody.put("tweets", gson.toJson(tweets));
 		} else {
-			responseBody.put("tweetCount", result.getCount());
+			responseBody.put("tweetCount", tweets.size());
 			responseBody.put("message", "No tweets found");
 		}
 		responseJson.put("statusCode", 200);
