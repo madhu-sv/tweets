@@ -96,8 +96,7 @@ public class TweetsHandler implements RequestStreamHandler {
 		JSONObject responseBody = new JSONObject();
 
 		ScanRequest scanRequest = new ScanRequest()
-									.withTableName(DYNAMODB_TABLE_NAME)
-									.withProjectionExpression("");
+									.withTableName(DYNAMODB_TABLE_NAME);
 		ScanResult result = client.scan(scanRequest);
 		if(result.getCount() > 1) {
 			responseBody.put("tweetCount", result.getCount());
