@@ -7,6 +7,65 @@ Tweets is driven by AWS API Gateway and AWS Lambdas. Backed by Dynamo DB as the 
 
 ![TweetsAPI](https://github.com/madhu-sv/tweets/blob/master/TweetsAPI.png)
 
+## AWS Lambda Route
+I decided to go the AWs Lambda route purely for cost/time reasons. Other options include
+    * ECS Fargate to replace all Lambdas except the Lambda Authorizer backed by NLB inside a private subnet.
+    * Spring Cloud Native
+    * Elastic bean with RDS
+
+## Security
+All the lambdas are running inside VPC with each having it's won security groups. No internet access to any of them.
+All resources including Privatelinks, VPC Endpoints, Lambdas and Secrets (with KMS) are protected using IAM and Security groups and have limited access using the least privilege principle.
+
+
+## Tweet Data Model
+Tweet data model is inspired from Twitter
+The actual json looks like
+
+```Javascript
+{
+    "Tweet": {
+        "id": "123460",
+        "user": {
+            "description": "user3",
+            "followersCount": 1234,
+            "userId": "user3",
+            "userName": "user3",
+            "verified": false
+        },
+        "entities": {},
+        "favorite": true,
+        "retweeted": false,
+        "text": "New tweet alert for user3"
+    }
+}
+```
+
+where `user` is another Java POJO used as a DynamoDBDocument
+It looks like
+```Java
+@DynamoDBDocument
+public class User {
+	private String description;
+	private Integer followersCount;
+	private String userId;
+	private String userName;
+	private boolean verified;
+    //Omitted for brevity...
+}
+```
+and `entities` the same 
+
+```Java
+@DynamoDBDocument
+public class Entities {
+	private List<String> hashTags;
+	private List<String> URLs;
+    //Omitted for brevity...
+}
+```
+
+I have used DynamoDBMapper to avoid manually parsing JSON to POJO to perform the CRUD operations
 
 Instructions for build
 This is a multi module maven project and all the AWS Lambdas are built using the maven shade plugin
