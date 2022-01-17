@@ -22,6 +22,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
@@ -94,6 +95,11 @@ public class TweetsHandler implements RequestStreamHandler {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 		JSONObject responseJson = new JSONObject();
 		JSONObject responseBody = new JSONObject();
+
+		List<Tweet> tweets = mapper.scan(Tweet.class, new DynamoDBScanExpression());
+		for(Tweet tweet : tweets) {
+			context.getLogger().log(tweet.toString());
+		}
 
 		ScanRequest scanRequest = new ScanRequest()
 									.withTableName(DYNAMODB_TABLE_NAME);
