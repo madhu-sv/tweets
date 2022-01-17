@@ -1,6 +1,13 @@
 # tweets
 Tweets API as AWS Lambda with API Gateway and DynamoDB
 
+# Architecture
+
+Tweets is driven by AWS API Gateway and AWS Lambdas. Backed by Dynamo DB as the backend for storing the Tweet data model.
+
+![TweetsAPI](https://github.com/madhu-sv/tweets/blob/master/TweetsAPI.png)
+
+
 Instructions for build
 This is a multi module maven project and all the AWS Lambdas are built using the maven shade plugin
 
@@ -72,7 +79,7 @@ Curl command to test the endpoint
 ```Shell
 curl -X GET -H "Content-Type: application/json"  -H "Authorization: Bearer <token goes here>"  https://0tg9vck032.execute-api.eu-west-2.amazonaws.com/test/tweets/{id}
 ```
-Example Respone
+Example Response
 
 ```Shell
 {
