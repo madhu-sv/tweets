@@ -98,7 +98,11 @@ public class TweetsHandler implements RequestStreamHandler {
 		ScanRequest scanRequest = new ScanRequest()
 									.withTableName(DYNAMODB_TABLE_NAME);
 		ScanResult result = client.scan(scanRequest);
+		for (Map<String, AttributeValue> item : result.getItems()){
+			context.getLogger().log(item.toString());
+		}
 		if(result.getCount() > 1) {
+			context.getLogger().log(String.format("Got %d rows", result.getCount()));
 			responseBody.put("tweetCount", result.getCount());
 			responseBody.put("tweets", gson.toJson(result.getItems()));
 		} else {
