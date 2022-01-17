@@ -25,6 +25,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ScanRequest;
+import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.Gson;
@@ -85,6 +87,30 @@ public class TweetsHandler implements RequestStreamHandler {
 		OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8");
 		writer.write(responseJson.toString());
 		writer.close();
+	}
+
+	@SuppressWarnings("unchecked")
+	public void getAllTweets(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+		JSONObject responseJson = new JSONObject();
+		JSONObject responseBody = new JSONObject();
+
+		ScanRequest scanRequest = new ScanRequest()
+									.withTableName(DYNAMODB_TABLE_NAME)
+									.withProjectionExpression("");
+		ScanResult result = client.scan(scanRequest);
+		if(result.getCount() > 1) {
+			responseBody.put("tweetCount", result.getCount());
+			responseBody.put("tweets", gson.toJson(result.getItems()));
+		} else {
+			responseBody.put("tweetCount", result.getCount());
+			responseBody.put("message", "No tweets found");
+		}
+		responseJson.put("statusCode", 200);
+		OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8");
+		writer.write(responseJson.toString());
+		writer.close();
+			
 	}
 
 	@SuppressWarnings("unchecked")
