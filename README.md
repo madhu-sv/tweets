@@ -7,9 +7,9 @@ This is a multi module maven project and all the AWS Lambdas are built using the
 build command 
 `mvn clean package shade:shade`
 
-##Testing Endpoints
+## Testing Endpoints
 
-###Login
+### Login
 
 Curl command to test the login
 `curl -X POST -H "Content-Type: application/json"  -d '{"Id": "123459","user": {"userName": "user4","password":"<password_here>"}' \
@@ -21,7 +21,7 @@ Example Respone
   "token": eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidXNlcjMiLCJpc3MiOiJtYWRodXN1ZGhhbiIsImF1ZCI6InRlc3QgYXVkaWVuY2UiLCJleHAiOjE2NDI0MTM5NTR9.mEMnKaF2GUkA4zGhG7dVwACk_Tvc3HSDTjJJPxQoAKE"
  }`
 
-###Create
+### Create
 Curl command to test the endpoint
 `curl -X PUT -H "Content-Type: application/json"  -H "Authorization: Bearer <token goes here>" -d '{"Id": "<new_id_here>","user": {"userName": "user4","verified": false,"userId": "user4","description": "user4","followersCount": 123},
     "text": "New tweet alert for user4", \
@@ -44,7 +44,7 @@ Example Response
 }`
 
 
-##Get Tweets
+## Get Tweets
 GetAllTweets
 Curl command to test the endpoint
 `curl -X GET -H "Content-Type: application/json"  -H "Authorization: Bearer <token goes here>"  https://0tg9vck032.execute-api.eu-west-2.amazonaws.com/test/tweets`
