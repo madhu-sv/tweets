@@ -103,11 +103,12 @@ public class TweetsHandler implements RequestStreamHandler {
 			context.getLogger().log(String.format("Got %d rows", tweets.size()));
 			context.getLogger().log(gson.toJson(tweets));
 			responseBody.put("tweetCount", tweets.size());
-			responseBody.put("tweets", tweets);
+			responseBody.put("tweets", gson.toJson(tweets));
 		} else {
 			responseBody.put("tweetCount", tweets.size());
 			responseBody.put("message", "No tweets found");
 		}
+		responseJson.put("body", responseBody.toString());
 		responseJson.put("statusCode", 200);
 		OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8");
 		writer.write(responseJson.toString());
