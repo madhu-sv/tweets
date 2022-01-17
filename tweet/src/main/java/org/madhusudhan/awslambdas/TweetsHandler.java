@@ -106,7 +106,7 @@ public class TweetsHandler implements RequestStreamHandler {
 			responseBody.put("tweetCount", tweets.size());
 			responseBody.put("message", "No tweets found");
 		}
-		responseJson.put("body", responseBody.toString());
+		responseJson.put("body", responseBody);
 		responseJson.put("statusCode", 200);
 		OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8");
 		writer.write(responseJson.toString());
