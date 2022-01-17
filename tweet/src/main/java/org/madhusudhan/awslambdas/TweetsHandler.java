@@ -103,7 +103,7 @@ public class TweetsHandler implements RequestStreamHandler {
 			context.getLogger().log(String.format("Got %d rows", tweets.size()));
 			context.getLogger().log(gson.toJson(tweets));
 			responseBody.put("tweetCount", tweets.size());
-			responseBody.put("tweets", gson.toJson(tweets));
+			responseBody.put("tweets", tweets);
 		} else {
 			responseBody.put("tweetCount", tweets.size());
 			responseBody.put("message", "No tweets found");
