@@ -1,0 +1,5 @@
+{
+    "type": "TOKEN",
+    "authorizationToken": "eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoidXNlcjEiLCJpc3MiOiJtYWRodXN1ZGhhbiIsImF1ZCI6InRlc3QgYXVkaWVuY2UiLCJleHAiOjE2NDE3MzQ1NDN9.sYvQYi758YCyug0QtBEjSnIGmamKvpEtwooi-kvy4r4",
+    "methodArn": "arn:aws:execute-api:us-east-1:123456789012:example/prod/POST/{proxy+}"
+}
